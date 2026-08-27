@@ -3387,12 +3387,60 @@ html, body, #root, .app-container {
     gap: 8px;
   }
 
-  /* Profile Editor Forms on Mobile */
+  /* Profile Editor Forms & Layouts on Mobile */
   .form-row,
   .profile-grid,
-  .skills-matrix-grid {
+  .skills-matrix-grid,
+  .roles-grid,
+  .preferences-grid {
     grid-template-columns: 1fr;
     gap: 12px;
+  }
+
+  .profile-section {
+    padding: 16px 12px;
+  }
+
+  .section-title-group {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .section-title-group .btn-secondary-sm {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .gap-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .gap-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+
+  .gap-table-header,
+  .gap-table-row {
+    min-width: 580px;
+    grid-template-columns: 2fr 1fr 1.2fr 1fr 1.2fr;
+    gap: 8px;
+  }
+
+  .add-skill-form {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .add-skill-form .input-field,
+  .add-skill-form .select-field,
+  .add-skill-form button {
+    width: 100%;
   }
 }
 
