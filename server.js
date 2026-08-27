@@ -215,9 +215,7 @@ app.get('/api/health', (req, res) => {
 // Get all users (demo listing)
 app.get('/api/users/all', async (req, res) => {
   try {
-    if (!isMongoConnected) {
-      return res.json(INITIAL_DEMO_USERS.map(u => ({ ...u, id: u.customId })));
-    }
+    
     const users = await User.find();
     res.json(users.map(formatUserResponse));
   } catch (err) {
@@ -226,174 +224,249 @@ app.get('/api/users/all', async (req, res) => {
 });
 
 // User Registration Endpoint (MongoDB Atlas with Bcrypt Hashing)
+// User Registration Endpoint
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
+
     if (!name || !email || !password) {
-      return res.status(400).json({ error: 'Name, email, and password are required.' });
-    }
-
-    if (isMongoConnected) {
-      const existingUser = await User.findOne({ email: email.toLowerCase() });
-      if (existingUser) {
-        return res.status(400).json({ error: 'An account with this email address already exists in MongoDB Atlas.' });
-      }
-
-      // Hash password using bcrypt salt factor 10
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const customId = 'user-' + Date.now();
-
-      const newUser = new User({
-        customId,
-        name,
-        email: email.toLowerCase(),
-        password: hashedPassword,
-        avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`,
-        role: 'Learner',
-        hasCompletedSurvey: false,
-        targetGoalId: 'fullstack-ai',
-        weeklyHours: 12,
-        learningStyle: 'mixed'
+      return res.status(400).json({
+        error: 'Name, email, and password are required.'
       });
-
-      await newUser.save();
-      console.log(`👤 New user registered in MongoDB Atlas with bcrypt hash: ${name} (${email})`);
-      return res.status(201).json({ user: formatUserResponse(newUser) });
-    } else {
-      // Offline / fallback mock user
-      const customId = 'user-' + Date.now();
-      const fallbackUser = {
-        id: customId,
-        name,
-        email,
-        avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`,
-        role: 'Learner',
-        hasCompletedSurvey: false,
-        targetGoalId: 'fullstack-ai',
-        weeklyHours: 12,
-        learningStyle: 'mixed'
-      };
-      return res.status(201).json({ user: fallbackUser });
     }
+
+    const existingUser = await User.findOne({
+      email: email.toLowerCase()
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        error: 'An account with this email address already exists.'
+      });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const customId = 'user-' + Date.now();
+
+    const newUser = new User({
+      customId,
+      name,
+      email: email.toLowerCase(),
+      password: hashedPassword,
+      avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`,
+      role: 'Learner',
+      hasCompletedSurvey: false,
+      targetGoalId: 'fullstack-ai',
+      weeklyHours: 12,
+      learningStyle: 'mixed'
+    });
+
+    await newUser.save();
+
+    console.log(
+      `👤 New user registered in MongoDB Atlas: ${name} (${email})`
+    );
+
+    return res.status(201).json({
+      user: formatUserResponse(newUser)
+    });
+
   } catch (err) {
     console.error('Registration error:', err);
-    res.status(500).json({ error: err.message || 'Registration failed.' });
+
+    res.status(500).json({
+      error: err.message || 'Registration failed.'
+    });
   }
 });
-
 // User Login Endpoint (MongoDB Atlas with Bcrypt Verification)
+// User Login Endpoint
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required.' });
+      return res.status(400).json({
+        error: 'Email and password are required.'
+      });
     }
 
-    if (isMongoConnected) {
-      const user = await User.findOne({ email: email.toLowerCase() });
-      if (!user) {
-        return res.status(401).json({ error: 'Invalid email address or password.' });
-      }
+    const user = await User.findOne({
+      email: email.toLowerCase()
+    });
 
-      // Verify bcrypt hash or upgrade legacy plain text
-      let isMatch = false;
-      if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$')) {
-        isMatch = await bcrypt.compare(password, user.password);
-      } else {
-        isMatch = (user.password === password);
-        if (isMatch) {
-          // Upgrade legacy user to bcrypt hash
-          user.password = await bcrypt.hash(password, 10);
-          await user.save();
-          console.log(`🔐 Upgraded plain text password to bcrypt hash for user: ${user.email}`);
-        }
-      }
+    if (!user) {
+      return res.status(401).json({
+        error: 'Invalid email address or password.'
+      });
+    }
 
-      if (!isMatch) {
-        return res.status(401).json({ error: 'Invalid email address or password.' });
-      }
+    // Verify bcrypt password
+    let isMatch = false;
 
-      console.log(`🔓 User authenticated via bcrypt from MongoDB Atlas: ${user.name} (${user.email})`);
-      return res.json({ user: formatUserResponse(user) });
+    if (
+      user.password.startsWith('$2a$') ||
+      user.password.startsWith('$2b$') ||
+      user.password.startsWith('$2y$')
+    ) {
+      isMatch = await bcrypt.compare(password, user.password);
     } else {
-      // Fallback check
-      const demoMatch = INITIAL_DEMO_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
-      if (demoMatch) {
-        const isMatch = bcrypt.compareSync(password, demoMatch.password) || demoMatch.password === password;
-        if (isMatch) {
-          return res.json({ user: { ...demoMatch, id: demoMatch.customId } });
-        }
+      // Legacy plain-text password support
+      isMatch = user.password === password;
+
+      if (isMatch) {
+        user.password = await bcrypt.hash(password, 10);
+        await user.save();
       }
-      return res.status(401).json({ error: 'Invalid email address or password.' });
     }
+
+    if (!isMatch) {
+      return res.status(401).json({
+        error: 'Invalid email address or password.'
+      });
+    }
+
+    console.log(
+      `🔓 User authenticated via MongoDB Atlas: ${user.name} (${user.email})`
+    );
+
+    return res.json({
+      user: formatUserResponse(user)
+    });
+
   } catch (err) {
     console.error('Login error:', err);
-    res.status(500).json({ error: err.message || 'Login failed.' });
+
+    res.status(500).json({
+      error: err.message || 'Login failed.'
+    });
   }
 });
 
 // Complete Onboarding Survey & Update Profile (MongoDB Atlas)
+// Complete Onboarding Survey & Update Profile
 app.put('/api/users/:id/survey', async (req, res) => {
   try {
     const { id } = req.params;
-    const { targetGoalId, weeklyHours, learningStyle, assessedSkills } = req.body;
+    const {
+      targetGoalId,
+      weeklyHours,
+      learningStyle,
+      assessedSkills
+    } = req.body;
 
-    if (isMongoConnected) {
-      const user = await User.findOne({ $or: [{ customId: id }, { _id: mongoose.Types.ObjectId.isValid(id) ? id : null }] });
-      if (!user) {
-        return res.status(404).json({ error: 'User not found in MongoDB Atlas.' });
-      }
+    const user = await User.findOne({
+      $or: [
+        { customId: id },
+        {
+          _id: mongoose.Types.ObjectId.isValid(id)
+            ? id
+            : null
+        }
+      ]
+    });
 
-      user.hasCompletedSurvey = true;
-      if (targetGoalId) user.targetGoalId = targetGoalId;
-      if (weeklyHours) user.weeklyHours = weeklyHours;
-      if (learningStyle) user.learningStyle = learningStyle;
-      if (assessedSkills) user.surveySkills = assessedSkills;
-
-      await user.save();
-      console.log(`📋 Onboarding survey saved in MongoDB Atlas for user: ${user.name}`);
-      return res.json({ user: formatUserResponse(user) });
-    } else {
-      return res.json({ status: 'ok', id });
+    if (!user) {
+      return res.status(404).json({
+        error: 'User not found.'
+      });
     }
+
+    user.hasCompletedSurvey = true;
+
+    if (targetGoalId) {
+      user.targetGoalId = targetGoalId;
+    }
+
+    if (weeklyHours) {
+      user.weeklyHours = weeklyHours;
+    }
+
+    if (learningStyle) {
+      user.learningStyle = learningStyle;
+    }
+
+    if (assessedSkills) {
+      user.surveySkills = assessedSkills;
+    }
+
+    await user.save();
+
+    console.log(
+      `📋 Onboarding survey saved for user: ${user.name}`
+    );
+
+    return res.json({
+      user: formatUserResponse(user)
+    });
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Survey error:', err);
+
+    res.status(500).json({
+      error: err.message
+    });
   }
 });
 
 // Fetch User Workspace State (MongoDB Atlas)
+// Fetch User Workspace State
 app.get('/api/workspace/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    if (isMongoConnected) {
-      const workspace = await Workspace.findOne({ userId });
-      if (workspace) {
-        return res.json(workspace);
-      }
+
+    const workspace = await Workspace.findOne({ userId });
+
+    if (!workspace) {
+      return res.status(404).json({
+        error: 'Workspace not found'
+      });
     }
-    return res.status(404).json({ error: 'Workspace not found' });
+
+    return res.json(workspace);
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Get workspace error:', err);
+
+    res.status(500).json({
+      error: err.message
+    });
   }
 });
 
 // Save User Workspace State (MongoDB Atlas)
+// Save User Workspace State
 app.post('/api/workspace/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const workspaceData = req.body;
 
-    if (isMongoConnected) {
-      const updated = await Workspace.findOneAndUpdate(
-        { userId },
-        { ...workspaceData, userId, updatedAt: new Date() },
-        { upsert: true, new: true }
-      );
-      return res.json({ status: 'saved', workspace: updated });
-    }
-    return res.json({ status: 'offline' });
+    const updated = await Workspace.findOneAndUpdate(
+      { userId },
+      {
+        ...workspaceData,
+        userId,
+        updatedAt: new Date()
+      },
+      {
+        upsert: true,
+        new: true
+      }
+    );
+
+    return res.json({
+      status: 'saved',
+      workspace: updated
+    });
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Save workspace error:', err);
+
+    res.status(500).json({
+      error: err.message
+    });
   }
 });
 
