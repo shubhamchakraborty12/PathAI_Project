@@ -16,23 +16,31 @@ import {
   LogOut,
   ChevronDown,
   Home,
-  UserPlus
+  UserPlus,
+  Menu,
+  X
 } from 'lucide-react';
 
 export const Navbar = () => {
   const { activeTab, setActiveTab, profile, userStreak, setDiagnosticOpen } = useLearning();
   const { currentUser, isAuthenticated, setAuthModalOpen, setOnboardingSurveyOpen, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleExportPDF = () => {
     window.print();
+  };
+
+  const handleNavClick = (tab) => {
+    setActiveTab(tab);
+    setMobileMenuOpen(false);
   };
 
   return (
     <header className="app-navbar">
       <div className="navbar-container">
         {/* Brand Logo */}
-        <div className="navbar-brand" onClick={() => setActiveTab(isAuthenticated ? 'dashboard' : 'landing')}>
+        <div className="navbar-brand" onClick={() => handleNavClick(isAuthenticated ? 'dashboard' : 'landing')}>
           <div className="brand-icon-wrapper">
             <BrainCircuit className="brand-icon" />
           </div>
@@ -43,12 +51,12 @@ export const Navbar = () => {
         </div>
 
         {/* Primary Navigation Tabs */}
-        <nav className="navbar-nav">
+        <nav className={`navbar-nav ${mobileMenuOpen ? 'mobile-open' : ''}`}>
           {!isAuthenticated ? (
             <>
               <button 
                 className={`nav-link ${activeTab === 'landing' ? 'active' : ''}`}
-                onClick={() => setActiveTab('landing')}
+                onClick={() => handleNavClick('landing')}
               >
                 <Home className="nav-icon" />
                 <span>Home</span>
@@ -56,7 +64,7 @@ export const Navbar = () => {
 
               <button 
                 className={`nav-link ${activeTab === 'catalog' ? 'active' : ''}`}
-                onClick={() => setActiveTab('catalog')}
+                onClick={() => handleNavClick('catalog')}
               >
                 <BookOpen className="nav-icon" />
                 <span>Browse Catalog</span>
@@ -66,7 +74,7 @@ export const Navbar = () => {
             <>
               <button 
                 className={`nav-link ${activeTab === 'dashboard' ? 'active' : ''}`}
-                onClick={() => setActiveTab('dashboard')}
+                onClick={() => handleNavClick('dashboard')}
               >
                 <LayoutDashboard className="nav-icon" />
                 <span>Dashboard</span>
@@ -74,7 +82,7 @@ export const Navbar = () => {
 
               <button 
                 className={`nav-link ${activeTab === 'flowchart' ? 'active' : ''}`}
-                onClick={() => setActiveTab('flowchart')}
+                onClick={() => handleNavClick('flowchart')}
               >
                 <GitFork className="nav-icon" />
                 <span>Flowchart Graph</span>
@@ -83,7 +91,7 @@ export const Navbar = () => {
 
               <button 
                 className={`nav-link ${activeTab === 'roadmap' ? 'active' : ''}`}
-                onClick={() => setActiveTab('roadmap')}
+                onClick={() => handleNavClick('roadmap')}
               >
                 <Map className="nav-icon" />
                 <span>Visual Roadmap</span>
@@ -91,7 +99,7 @@ export const Navbar = () => {
 
               <button 
                 className={`nav-link ${activeTab === 'profile' ? 'active' : ''}`}
-                onClick={() => setActiveTab('profile')}
+                onClick={() => handleNavClick('profile')}
               >
                 <UserCheck className="nav-icon" />
                 <span>Profile & Skills</span>
@@ -99,7 +107,7 @@ export const Navbar = () => {
 
               <button 
                 className={`nav-link ${activeTab === 'catalog' ? 'active' : ''}`}
-                onClick={() => setActiveTab('catalog')}
+                onClick={() => handleNavClick('catalog')}
               >
                 <BookOpen className="nav-icon" />
                 <span>Catalog</span>
@@ -107,7 +115,7 @@ export const Navbar = () => {
 
               <button 
                 className={`nav-link ${activeTab === 'chat' ? 'active' : ''}`}
-                onClick={() => setActiveTab('chat')}
+                onClick={() => handleNavClick('chat')}
               >
                 <MessageSquareCode className="nav-icon" />
                 <span>AI Assistant</span>
@@ -122,7 +130,7 @@ export const Navbar = () => {
             <>
               <div className="streak-badge" title="Daily Learning Streak">
                 <Flame className="streak-icon" />
-                <span>{userStreak} Day Streak</span>
+                <span>{userStreak}d</span>
               </div>
 
               <button 
@@ -153,6 +161,7 @@ export const Navbar = () => {
                       className="dropdown-item"
                       onClick={() => {
                         setDropdownOpen(false);
+                        setMobileMenuOpen(false);
                         setOnboardingSurveyOpen(true);
                       }}
                     >
@@ -164,6 +173,7 @@ export const Navbar = () => {
                       className="dropdown-item text-red-400"
                       onClick={() => {
                         setDropdownOpen(false);
+                        setMobileMenuOpen(false);
                         logout();
                       }}
                     >
@@ -193,8 +203,18 @@ export const Navbar = () => {
               </button>
             </div>
           )}
+
+          {/* Mobile Hamburger Menu Toggle Button */}
+          <button 
+            className="btn-mobile-toggle"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle Navigation Menu"
+          >
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
         </div>
       </div>
     </header>
   );
 };
+
