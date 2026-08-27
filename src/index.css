@@ -3050,8 +3050,14 @@ body {
 }
 
 /* ==========================================================================
-   MOBILE & TABLET RESPONSIVE STYLES
+   MOBILE & TABLET RESPONSIVE STYLES (PC & MOBILE COMPATIBLE)
    ========================================================================== */
+
+/* Global Mobile Overflow Guard */
+html, body, #root, .app-container {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
 
 /* Navigation Mobile Toggle Button */
 .btn-mobile-toggle {
@@ -3142,32 +3148,97 @@ body {
 
   .charts-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 }
 
 /* Mobile Screens (< 768px) */
 @media (max-width: 768px) {
-  html, body {
-    max-width: 100vw;
-    overflow-x: hidden;
-  }
-
   .main-content {
-    padding: 16px 12px;
+    padding: 14px 10px;
   }
 
   .hero-headline { 
-    font-size: 1.85rem; 
+    font-size: 1.75rem; 
+    line-height: 1.25;
   }
   
   .hero-cta-buttons { 
     flex-direction: column; 
     width: 100%;
+    gap: 10px;
   }
   
-  .hero-cta-buttons button {
+  .hero-cta-buttons button,
+  .hero-cta-buttons a {
     width: 100%;
     justify-content: center;
+  }
+
+  /* Dashboard Next Action Card Alignment Fix */
+  .next-action-card {
+    padding: 16px;
+  }
+
+  .next-action-body {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .next-title {
+    font-size: 1.15rem;
+    line-height: 1.35;
+  }
+
+  .next-desc {
+    font-size: 0.84rem;
+  }
+
+  .next-cta-group {
+    flex-direction: column;
+    width: 100%;
+    white-space: normal;
+    gap: 10px;
+  }
+
+  .next-cta-group a,
+  .next-cta-group button {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  /* Dashboard Charts Header Alignment Fix */
+  .chart-card {
+    padding: 14px;
+  }
+
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  /* Dashboard Stats Grid Fix */
+  .dash-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+
+  /* Flowchart View Mobile Fixes */
+  .flowchart-header-card {
+    padding: 16px;
   }
 
   .flowchart-header-row {
@@ -3176,29 +3247,51 @@ body {
     gap: 14px;
   }
 
+  .flowchart-title {
+    font-size: 1.35rem;
+  }
+
   .you-are-here-card {
     max-width: 100%;
     width: 100%;
+    box-sizing: border-box;
   }
 
+  .flow-node-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .node-step-pill {
+    position: static;
+    align-self: flex-start;
+    margin-bottom: 2px;
+  }
+
+  /* Catalog View Mobile Fixes */
   .catalog-grid,
   .catalog-resources-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .catalog-header {
     flex-direction: column;
     align-items: stretch;
-    gap: 16px;
+    gap: 14px;
   }
 
-  .search-box {
+  .search-box,
+  .search-input {
     width: 100%;
+    box-sizing: border-box;
   }
 
   .catalog-filter-bar {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 12px;
     overflow-x: auto;
     width: 100%;
@@ -3209,18 +3302,39 @@ body {
     gap: 6px;
   }
 
+  /* Resource Card Mobile Alignment */
+  .resource-card {
+    padding: 16px;
+  }
+
+  .card-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .card-meta {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .btn-complete-toggle {
+    align-self: flex-start;
+  }
+
+  /* Chat View Mobile Fixes */
   .chat-view-container {
-    height: calc(100vh - 130px);
-    min-height: 480px;
+    height: calc(100vh - 120px);
+    min-height: 460px;
   }
 
   .chat-messages-area {
-    padding: 14px 12px;
+    padding: 12px;
     gap: 12px;
   }
 
   .chat-bubble-wrapper {
-    max-width: 95%;
+    max-width: 96%;
   }
 
   .prompt-chips-bar {
@@ -3230,6 +3344,7 @@ body {
 
   .chat-input-form {
     padding: 10px 12px;
+    gap: 8px;
   }
 
   /* Modals on Mobile */
@@ -3237,12 +3352,13 @@ body {
   .auth-modal,
   .survey-modal-card,
   .diagnostic-modal-card {
-    width: 94vw !important;
-    max-width: 94vw !important;
-    padding: 18px 14px !important;
+    width: 95vw !important;
+    max-width: 95vw !important;
+    padding: 16px 12px !important;
     max-height: 90vh !important;
     overflow-y: auto !important;
     margin: 10px auto !important;
+    box-sizing: border-box !important;
   }
 
   .auth-tabs {
@@ -3253,6 +3369,30 @@ body {
   .auth-tab {
     width: 100%;
     text-align: center;
+  }
+
+  .survey-footer {
+    flex-direction: column-reverse;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .survey-footer button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .mcq-options-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  /* Profile Editor Forms on Mobile */
+  .form-row,
+  .profile-grid,
+  .skills-matrix-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 }
 
@@ -3270,17 +3410,8 @@ body {
     font-size: 0.75rem;
   }
 
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-
-  .stat-card {
-    padding: 12px;
-  }
-
-  .stat-value {
-    font-size: 1.3rem;
+  .chat-context-pill {
+    display: none;
   }
 
   .dsa-card-header {
@@ -3292,44 +3423,36 @@ body {
   .dsa-actions-row {
     flex-direction: column;
     width: 100%;
+    gap: 10px;
   }
 
-  .dsa-actions-row button {
+  .dsa-actions-row button,
+  .dsa-actions-row a {
     width: 100%;
     justify-content: center;
   }
 
   .problem-meta-row {
     flex-wrap: wrap;
+    gap: 8px;
   }
 
   .company-tags-list {
     margin-left: 0;
     margin-top: 4px;
     width: 100%;
+    flex-wrap: wrap;
   }
 
   .inspector-meta-grid {
     grid-template-columns: 1fr;
-  }
-
-  .mcq-options-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .survey-footer {
-    flex-direction: column-reverse;
     gap: 10px;
-  }
-
-  .survey-footer button {
-    width: 100%;
   }
 }
 
 /* Micro Mobile Screens (< 380px) */
 @media (max-width: 380px) {
-  .stats-grid {
+  .dash-stats-grid {
     grid-template-columns: 1fr;
   }
 
@@ -3347,4 +3470,5 @@ body {
     height: 20px;
   }
 }
+
 
